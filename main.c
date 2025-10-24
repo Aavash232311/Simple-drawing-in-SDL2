@@ -14,8 +14,15 @@ typedef struct
     int x2;
     int y2;
 } LineSegmant;
+
+typedef struct
+{
+    LineSegmant line1;
+    LineSegmant line2;
+} Both_Lines;
+
 // Bresenham's Circle Drawing Algorithm
-void draw_circle(SDL_Renderer *ren, int xc, int yc, int r)
+Both_Lines draw_circle(SDL_Renderer *ren, int xc, int yc, int r)
 {
     int point_dim = 4;
     int x = 0;
@@ -84,10 +91,10 @@ void draw_circle(SDL_Renderer *ren, int xc, int yc, int r)
 
     SDL_RenderDrawLine(ren, collision_line_1.x1, collision_line_1.x2, collision_line_1.y1, collision_line_1.y2); // collision border 1
 
-    collision_line_2.x1 = (collision.x - 2*r);
+    collision_line_2.x1 = (collision.x - 2 * r);
     collision_line_2.y1 = collision.y + r;
 
-    collision_line_2.x2 = (collision.x - 2*r);
+    collision_line_2.x2 = (collision.x - 2 * r);
     collision_line_2.y2 = collision.y - r;
 
     SDL_RenderDrawLine(ren, collision_line_2.x1, collision_line_2.y1, collision_line_2.x2, collision_line_2.y2);
@@ -109,6 +116,22 @@ void draw_circle(SDL_Renderer *ren, int xc, int yc, int r)
        continue till x = y, it's for first quarter we can find of all quarters.
 
     */
+    Both_Lines line_state;
+    line_state.line1 = collision_line_1;
+    line_state.line2 = collision_line_2;
+    return line_state;
+}
+
+void overlap(Both_Lines line, SDL_Rect rect_left, SDL_Rect rect_right, SDL_Renderer *ren)
+{
+    /* Here the right side will overlap with right,
+    and the left side will overlap with left,
+
+    But the question is 'x' coordinate can't only be the paramaters, we need to
+    look for 'y' coodinate values in range as well */
+    int y_min = rect_right.y;
+    int y_max = rect_right.y + rect_right.h;
+
 }
 
 int main()
@@ -178,7 +201,8 @@ int main()
         SDL_Rect board_2 = {width_frame - width_of_board, (int)board_2_y, width_of_board, height_of_board};
         SDL_RenderFillRect(ren, &board_2);
 
-        draw_circle(ren, init_circle_x, init_circle_y, r);
+        Both_Lines collision_lines = draw_circle(ren, init_circle_x, init_circle_y, r);
+        overlap(collision_lines, board_1, board_2, ren);
 
         // Here we have made the circle to increment in x-axis by 1.8 and once it reaches the bounce point we need to define it go bounce back ofc
         // init_circle_x += travel_speed;
