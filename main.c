@@ -1,6 +1,19 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 
+typedef struct
+{
+    int x;
+    int y;
+} Vector;
+
+typedef struct
+{
+    int x1;
+    int y1;
+    int x2;
+    int y2;
+} LineSegmant;
 // Bresenham's Circle Drawing Algorithm
 void draw_circle(SDL_Renderer *ren, int xc, int yc, int r)
 {
@@ -13,11 +26,7 @@ void draw_circle(SDL_Renderer *ren, int xc, int yc, int r)
     SDL_RenderFillRect(ren, &dot);
     int c = 0;
 
-    struct
-    {
-        int x;
-        int y;
-    } Point;
+    Vector collision;
 
     while (x <= y)
     { // at the completion of one Octet both x and y value will be the same
@@ -31,7 +40,7 @@ void draw_circle(SDL_Renderer *ren, int xc, int yc, int r)
             y--; // okay based on the algorithm we did it
         }
         x++;
-        // if found confisuing visualize in desmos, we are using symmetrical property of circle 
+        // if found confisuing visualize in desmos, we are using symmetrical property of circle
         // figuring out point across all 8 cotects
         // original
         SDL_Rect curr_dot_orginal = {x + xc, y + yc, point_dim, point_dim};
@@ -59,6 +68,29 @@ void draw_circle(SDL_Renderer *ren, int xc, int yc, int r)
         SDL_RenderFillRect(ren, &curr_dot_across_x_x_y);
         c++;
     }
+
+    collision.x = r + xc; // right and side we need to draw a hidden line to check for collision logic
+    collision.y = yc;
+
+    LineSegmant collision_line_1;
+    collision_line_1.x1 = collision.x;
+    collision_line_1.x2 = collision.y + r;
+    collision_line_1.y1 = collision.x;
+    collision_line_1.y2 = collision.y - r;
+
+    LineSegmant collision_line_2;
+
+    SDL_SetRenderDrawColor(ren, 252, 186, 3, 0);
+
+    SDL_RenderDrawLine(ren, collision_line_1.x1, collision_line_1.x2, collision_line_1.y1, collision_line_1.y2); // collision border 1
+
+    collision_line_2.x1 = (collision.x - 2*r);
+    collision_line_2.y1 = collision.y + r;
+
+    collision_line_2.x2 = (collision.x - 2*r);
+    collision_line_2.y2 = collision.y - r;
+
+    SDL_RenderDrawLine(ren, collision_line_2.x1, collision_line_2.y1, collision_line_2.x2, collision_line_2.y2);
     /*
         Note: Circle's are symmetrcial
 
@@ -120,9 +152,11 @@ int main()
 
     float board_2_y = 0.0f;
 
-    int init_circle_x = 200;
+    int init_circle_x = 400;
     int init_circle_y = 200;
     int r = 15;
+
+    const float travel_speed = 1.8f;
 
     while (!quit)
     {
@@ -145,6 +179,9 @@ int main()
         SDL_RenderFillRect(ren, &board_2);
 
         draw_circle(ren, init_circle_x, init_circle_y, r);
+
+        // Here we have made the circle to increment in x-axis by 1.8 and once it reaches the bounce point we need to define it go bounce back ofc
+        // init_circle_x += travel_speed;
 
         SDL_RenderPresent(ren);
 
@@ -174,14 +211,14 @@ int main()
                 {
                     if (board_2_y >= 0)
                     {
-                        board_2_y -= 8.0f;
+                        board_2_y -= 15.0f;
                     }
                 }
                 else if (event.key.keysym.sym == SDLK_DOWN)
                 {
                     if (!(board_2_y >= inc_limit))
                     {
-                        board_2_y += 8.0f;
+                        board_2_y += 15.0f;
                     }
                 }
             }
